@@ -7,7 +7,7 @@ import {
   ChevronLeft, ChevronRight, MapPin, Camera, X, CheckCircle,
   Upload, Loader2, AlertCircle,
 } from 'lucide-react';
-import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import { useCreateComplaint, useUploadEvidence } from '@/hooks/useComplaints';
 import { CATEGORIES } from '@/lib/constants';
 import { extractError } from '@/lib/api';
@@ -207,9 +207,20 @@ function LocationStep({ latitude, longitude, address, onChange, onNext }: { lati
     );
   }
 
-  function handleMapClick(e: any) {
-    const lat = e.detail?.latLng?.lat; const lng = e.detail?.latLng?.lng;
-    if (lat && lng) { onChange(lat, lng, `${lat.toFixed(5)}, ${lng.toFixed(5)}`); }
+  function MapEventsHandler() {
+    useMapEvents({
+      click(e) {
+        const { lat, lng } = e.latlng;
+        onChange(lat, lng, `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+      },
+    });
+    return null;
+  }
+
+  function MapCenterUpdater({ center }: { center: { lat: number; lng: number } }) {
+    const map = useMap();
+    React.useEffect(() => { map.setView(center, map.getZoom()); }, [center, map]);
+    return null;
   }
 
   return (
@@ -221,12 +232,16 @@ function LocationStep({ latitude, longitude, address, onChange, onNext }: { lati
         {detecting ? 'Detecting location…' : 'Use my current location'}
       </button>
       {gpsError && <p className="text-sm text-red-600 mb-3 flex items-center gap-1.5"><AlertCircle size={14} /> {gpsError}</p>}
-      <div className="rounded-2xl overflow-hidden border border-slate-200 mb-4" style={{ height: 240 }}>
-        <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}>
-          <Map defaultCenter={mapCenter} center={mapCenter} defaultZoom={15} gestureHandling="greedy" disableDefaultUI onClick={handleMapClick} mapId="sahayi-complaint-map">
-            {hasLocation && <Marker position={{ lat: latitude!, lng: longitude! }} />}
-          </Map>
-        </APIProvider>
+      <div className="rounded-2xl overflow-hidden border border-slate-200 mb-4" style={{ height: 240, position: 'relative', zIndex: 0 }}>
+        <MapContainer center={mapCenter} zoom={15} style={{ height: '100%', width: '100%', zIndex: 1 }} zoomControl={false}>
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          {hasLocation && <Marker position={{ lat: latitude!, lng: longitude! }} />}
+          <MapEventsHandler />
+          <MapCenterUpdater center={mapCenter} />
+        </MapContainer>
       </div>
       <p className="text-xs text-slate-400 text-center mb-4">Tap anywhere on the map to set location manually</p>
       {hasLocation && (

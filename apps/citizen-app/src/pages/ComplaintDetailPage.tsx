@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, MapPin, Share2, Star, RotateCcw, Upload, CheckCircle, Clock, AlertCircle, Loader2 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
-import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import { useComplaint, useReopenComplaint, useSubmitFeedback, useUploadEvidence } from '@/hooks/useComplaints';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { CategoryChip } from '@/components/ui/CategoryChip';
@@ -106,16 +106,14 @@ export default function ComplaintDetailPage() {
               <MapPin size={14} className="text-primary-500" />
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Location</span>
             </div>
-            <div style={{ height: 180 }}>
-              <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}>
-                <Map
-                  defaultCenter={{ lat: complaint.latitude, lng: complaint.longitude }}
-                  defaultZoom={15} disableDefaultUI gestureHandling="none"
-                  mapId="sahayi-detail-map"
-                >
-                  <Marker position={{ lat: complaint.latitude, lng: complaint.longitude }} />
-                </Map>
-              </APIProvider>
+            <div style={{ height: 180, position: 'relative', zIndex: 0 }}>
+              <MapContainer center={{ lat: complaint.latitude, lng: complaint.longitude }} zoom={15} style={{ height: '100%', width: '100%', zIndex: 1 }} zoomControl={false} dragging={false} scrollWheelZoom={false} doubleClickZoom={false} touchZoom={false}>
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <Marker position={{ lat: complaint.latitude, lng: complaint.longitude }} />
+              </MapContainer>
             </div>
             {complaint.address && <p className="px-4 py-3 text-xs text-slate-500">{complaint.address}</p>}
           </div>
