@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+.output/
+
+# Environment files - NEVER commit these
+.env
+.env.local
+.env.*.local
+apps/api/.env
+apps/citizen-app/.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Vite
+*.local
+
+# TypeScript build info
+*.tsbuildinfo
+
+# PWA generated assets
+apps/citizen-app/dist/sw.js
+apps/citizen-app/dist/workbox-*.js
